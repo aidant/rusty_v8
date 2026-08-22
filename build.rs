@@ -497,9 +497,7 @@ fn build_v8(is_asan: bool) {
     } else {
       "unknown"
     };
-    if target_arch == "x86_64" {
-      maybe_install_sysroot("amd64");
-    }
+    maybe_install_sysroot("amd64");
     gn_args.push(format!(r#"v8_target_cpu="{arch}""#).to_string());
     gn_args.push(format!(r#"target_cpu="{arch}""#).to_string());
     gn_args.push(r#"target_os="android""#.to_string());
@@ -508,7 +506,7 @@ fn build_v8(is_asan: bool) {
 
     // NDK 23 and above removes libgcc entirely.
     // https://github.com/rust-lang/rust/pull/85806
-    if !Path::new("./third_party/android_ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++").exists() {
+    if !Path::new("./third_party/android_toolchain/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++").exists() {
         assert!(Command::new("curl")
         .arg("-L")
         .arg("-o").arg("./third_party/android-ndk-r26c-linux.zip")
@@ -526,7 +524,8 @@ fn build_v8(is_asan: bool) {
         .unwrap()
         .success());
 
-        fs::rename("./third_party/android-ndk-r26c", "./third_party/android_ndk").unwrap();
+        fs::create_dir_all("./third_party/android_toolchain").unwrap();
+        fs::rename("./third_party/android-ndk-r26c", "./third_party/android_toolchain/ndk").unwrap();
         fs::remove_file("./third_party/android-ndk-r26c-linux.zip").unwrap();
       }
     static CHROMIUM_URI: &str = "https://chromium.googlesource.com";
