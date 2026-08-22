@@ -27,237 +27,19 @@ jobs:
         !contains(github.event.pull_request.labels.*.name, 'no-fail-fast') }}
       matrix:
         config:
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          # iOS: built from source. The simulator keeps the JIT; the device
-          # build is jitless (no JIT entitlement on device) -- see build.rs.
-          # Cross-compiled, so the test suite is not run on the runner.
-          # Built with simdutf (the variant downstream consumers like Deno
-          # need); WebAssembly is disabled (Torque can't build it jitless).
-          - os: macos-15
-            target: aarch64-apple-ios-sim
+          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
+            target: aarch64-linux-android
             variant: release
             v8_enable_pointer_compression: false
             simdutf: true
-            cargo: cargo
+            cargo: cross
 
-          - os: macos-15
-            target: aarch64-apple-ios
+          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
+            target: x86_64-linux-android
             variant: release
             v8_enable_pointer_compression: false
             simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: true
-            cargo: cargo
-
-          # musl: cross-compiled on the glibc runner (host tools stay glibc,
-          # target objects are musl -- see build.rs). Not run on the runner.
-          # Release only for now, like the iOS targets: V8's debug-only
-          # execinfo backtrace path (external-reference-table.cc) assumes glibc
-          # and doesn't compile against musl.
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-musl
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-musl
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          # aarch64 musl: cross-compiled on the x64 glibc runner (host + snapshot
-          # toolchains stay glibc; only the arm64 target objects are musl).
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-musl
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-musl
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'windows-2022-xxl' || 'windows-2022' }}
-            target: x86_64-pc-windows-msvc
-            variant: release # Note: we do not support windows debug builds.
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: riscv64gc-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: riscv64gc-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            cargo: cargo
-
-          # simdutf builds
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: debug
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: macos-15
-            target: aarch64-apple-darwin
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: x86_64-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: aarch64-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: riscv64gc-unknown-linux-gnu
-            variant: debug
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
-            target: riscv64gc-unknown-linux-gnu
-            variant: release
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
-
-          - os: ${{ github.repository == 'denoland/rusty_v8' && 'windows-2022-xxl' || 'windows-2022' }}
-            target: x86_64-pc-windows-msvc
-            variant: release # Note: we do not support windows debug builds.
-            v8_enable_pointer_compression: false
-            simdutf: true
-            cargo: cargo
+            cargo: cross
 
     env:
       V8_FROM_SOURCE: true
@@ -380,6 +162,14 @@ jobs:
 
           echo "RUSTY_V8_MUSL_SYSROOT=${SYSROOT}" >> ${GITHUB_ENV}
 
+      - name: Install cross and build custom image (Android)
+        if: contains(matrix.config.target, '-linux-android')
+        run: |
+          mkdir -p "${HOME}/.local/bin"
+          curl -qL https://github.com/cross-rs/cross/releases/download/v0.2.5/cross-x86_64-unknown-linux-musl.tar.gz | tar xz -C "${HOME}/.local/bin"
+          echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+          docker build --build-arg CROSS_BASE_IMAGE=ghcr.io/cross-rs/${{ matrix.config.target }}:0.2.5 -t cross-rusty_v8:${{ matrix.config.target }} .
+
       - name: Write git_submodule_status.txt
         run: git submodule status --recursive > git_submodule_status.txt
 
@@ -418,6 +208,9 @@ jobs:
                "aarch64-unknown-linux-gnu" = "aarch64-unknown-linux-musl"
                # Unlike aarch64, the riscv64 sccache binary is not static, so use the host architecture one.
                "riscv64gc-unknown-linux-gnu" = "x86_64-unknown-linux-musl"
+               # Android compiles in the container, which has its own sccache.
+               "aarch64-linux-android"     = "x86_64-unknown-linux-musl"
+               "x86_64-linux-android"      = "x86_64-unknown-linux-musl"
                "x86_64-pc-windows-msvc"    = "x86_64-pc-windows-msvc"
                # iOS cross-compiles on the arm64 macOS runner, so use the host sccache binary.
                "aarch64-apple-ios"         = "aarch64-apple-darwin"
@@ -474,11 +267,25 @@ jobs:
           SCCACHE_IDLE_TIMEOUT: 0
         run: ${{ matrix.config.cargo }} build -v --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
 
+      - name: Build (Android)
+        if: contains(matrix.config.target, '-linux-android')
+        env:
+          SCCACHE_IDLE_TIMEOUT: 0
+        run: ${{ matrix.config.cargo }} build -v --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
+
       - name: Test
         env:
           SCCACHE_IDLE_TIMEOUT: 0
-        if: (matrix.config.variant == 'debug' || matrix.config.variant == 'release') && !contains(matrix.config.target, 'ios') && !contains(matrix.config.target, '-linux-musl')
+        if: (matrix.config.variant == 'debug' || matrix.config.variant == 'release') && !contains(matrix.config.target, 'ios') && !contains(matrix.config.target, '-linux-musl') && !contains(matrix.config.target, '-linux-android')
         run: ${{ matrix.config.cargo }} nextest run -v --cargo-verbose --cargo-verbose --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
+
+      # `cross nextest` would need cargo-nextest inside the container; the
+      # cross image already carries a qemu runner for plain `cargo test`.
+      - name: Test (Android)
+        if: contains(matrix.config.target, '-linux-android')
+        env:
+          SCCACHE_IDLE_TIMEOUT: 0
+        run: ${{ matrix.config.cargo }} test -vv --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
 
       - name: Clippy
         if: ${{ !contains(matrix.config.target, 'ios') && !contains(matrix.config.target, '-linux-musl') }}
@@ -512,8 +319,17 @@ jobs:
           name: src_binding${{ env.FEATURES_SUFFIX }}_${{ matrix.config.variant }}_${{ matrix.config.target }}.rs
           path: target/src_binding${{ env.FEATURES_SUFFIX }}_${{ matrix.config.variant }}_${{ matrix.config.target }}.rs
 
+      - name: Upload static lib artifact (Android)
+        if: contains(matrix.config.target, '-linux-android')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.LIB_NAME }}${{ env.FEATURES_SUFFIX }}_${{ matrix.config.variant }}_${{ matrix.config.target }}.${{ env.LIB_EXT }}.gz
+          path: target/${{ env.LIB_NAME }}${{ env.FEATURES_SUFFIX }}_${{ matrix.config.variant }}_${{ matrix.config.target }}.${{ env.LIB_EXT }}.gz
+          compression-level: 0
+
   build-asan:
     name: asan aarch64-apple-darwin
+    if: github.repository == 'denoland/rusty_v8'
     runs-on: macos-15
     timeout-minutes: 180
     env:
@@ -592,6 +408,7 @@ jobs:
 
   build-windows-arm64:
     name: release aarch64-pc-windows-msvc
+    if: github.repository == 'denoland/rusty_v8'
     runs-on: ${{ github.repository == 'denoland/rusty_v8' && 'windows-2022-xxl' || 'windows-2022' }}
     timeout-minutes: 180
     env:
@@ -694,6 +511,7 @@ jobs:
 
   build-windows-arm64-simdutf:
     name: release aarch64-pc-windows-msvc simdutf
+    if: github.repository == 'denoland/rusty_v8'
     runs-on: ${{ github.repository == 'denoland/rusty_v8' && 'windows-2022-xxl' || 'windows-2022' }}
     timeout-minutes: 180
     env:
@@ -787,6 +605,7 @@ jobs:
 
   test-windows-arm64:
     name: test aarch64-pc-windows-msvc
+    if: github.repository == 'denoland/rusty_v8'
     needs: build-windows-arm64
     runs-on: ${{ github.repository == 'denoland/rusty_v8' && 'windows-11-arm-xl' || 'windows-11-arm' }}
     timeout-minutes: 60
