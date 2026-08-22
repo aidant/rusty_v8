@@ -1,11 +1,14 @@
 ARG CROSS_BASE_IMAGE
 FROM $CROSS_BASE_IMAGE
 
+ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
+
 RUN apt update && \
+    apt install -y python3.9 && \
+    ln -sf /usr/bin/python3.9 /usr/local/bin/python3 && \
     apt install -y curl && \
     curl -L https://github.com/mozilla/sccache/releases/download/v0.7.7/sccache-v0.7.7-x86_64-unknown-linux-musl.tar.gz | tar xzf -
 
-ENV TZ=Etc/UTC
 COPY ./build/*.sh /chromium_build/
 COPY ./build/install-build-deps.py /chromium_build/
 RUN \
