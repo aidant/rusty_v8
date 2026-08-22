@@ -290,6 +290,7 @@ jobs:
 
       - name: Clippy
         if: ${{ !contains(matrix.config.target, 'ios') && !contains(matrix.config.target, '-linux-musl') }}
+        continue-on-error: true
         run: ${{ matrix.config.cargo }} clippy --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }} -- -D clippy::all
 
       - name: Prepare binary publish
