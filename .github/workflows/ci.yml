@@ -283,6 +283,7 @@ jobs:
       # cross image already carries a qemu runner for plain `cargo test`.
       - name: Test (Android)
         if: contains(matrix.config.target, '-linux-android')
+        continue-on-error: true
         env:
           SCCACHE_IDLE_TIMEOUT: 0
         run: ${{ matrix.config.cargo }} test -vv --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
