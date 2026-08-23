@@ -271,6 +271,7 @@ jobs:
         if: contains(matrix.config.target, '-linux-android')
         env:
           SCCACHE_IDLE_TIMEOUT: 0
+          SCCACHE_DIR: /project/target/sccache
         run: ${{ matrix.config.cargo }} build -v --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
 
       - name: Test
@@ -286,7 +287,25 @@ jobs:
         continue-on-error: true
         env:
           SCCACHE_IDLE_TIMEOUT: 0
-        run: ${{ matrix.config.cargo }} test -vv --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
+          SCCACHE_DIR: /project/target/sccache
+        run: |
+          NDK=third_party/android_toolchain/ndk/toolchains/llvm/prebuilt/linux-x86_64
+          case "${{ matrix.config.target }}" in
+            aarch64-*) RT_ARCH=aarch64 ;;
+            x86_64-*)  RT_ARCH=x86_64  ;;
+            *) echo "unexpected target ${{ matrix.config.target }}"; exit 1 ;;
+          esac
+          # Glob the clang version directory rather than pinning it, so an NDK
+          # bump in build.rs does not silently break the link.
+          BUILTINS=$(ls "${NDK}"/lib/clang/*/lib/linux/libclang_rt.builtins-"${RT_ARCH}"-android.a | head -1)
+          if [ -z "${BUILTINS}" ]; then
+            echo "could not find libclang_rt.builtins-${RT_ARCH}-android.a under ${NDK}"
+            exit 1
+          fi
+          echo "linking compiler-rt builtins: ${BUILTINS}"
+          # Paths are resolved inside the container, where the workspace is /project.
+          export RUSTFLAGS="${RUSTFLAGS} -C link-arg=/project/${BUILTINS}"
+          ${{ matrix.config.cargo }} test -vv --all-targets --locked --target ${{ matrix.config.target }} ${{ env.CARGO_VARIANT_FLAG }} ${{ env.CARGO_FEATURE_FLAGS }}
 
       - name: Clippy
         if: ${{ !contains(matrix.config.target, 'ios') && !contains(matrix.config.target, '-linux-musl') }}
